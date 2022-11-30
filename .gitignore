@@ -34,3 +34,6 @@
 
 #logfiles
 *.log
+
+#debugger files
+.launch
