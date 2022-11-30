@@ -1,2 +1,2 @@
 # FreeRTOS
-Studying FreeRTOS with an ARM M3-based development board
+FreeRTOS projects an ARM M3-based development board (NXP LPC1549).
