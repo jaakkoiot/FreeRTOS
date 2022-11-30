@@ -97,6 +97,9 @@ static void vUARTTask(void *pvParameters) {
 
 		if(sec == 60){
 			min++;
+			if(min == 60){
+				min = 0;
+			}
 			sec = 0;
 			DEBUGOUT("-- -- --\n");
 		}
