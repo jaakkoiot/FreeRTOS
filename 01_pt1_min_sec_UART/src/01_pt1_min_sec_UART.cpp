@@ -88,11 +88,18 @@ static void vLEDTask3(void *pvParameters) {
 
 /* UART (or output) thread */
 static void vUARTTask(void *pvParameters) {
-	int tickCnt = 0;
+	int sec = 0;
+	int min = 0;
 
 	while (1) {
-		DEBUGOUT("Tick: %d \r\n", tickCnt);
-		tickCnt++;
+		DEBUGOUT("Time: %02d:%02d \r\n", min, sec);
+		sec++;
+
+		if(sec == 60){
+			min++;
+			sec = 0;
+			DEBUGOUT("-- -- --\n");
+		}
 
 		/* About a 1s delay here */
 		vTaskDelay(configTICK_RATE_HZ);
