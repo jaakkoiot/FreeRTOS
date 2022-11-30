@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>01_pt1_min_sec_UART</name>
+	<name>min_sec_UART_print</name>
 	<comment></comment>
 	<projects>
 		<project>lpc_board_nxp_lpcxpresso_1549</project>
