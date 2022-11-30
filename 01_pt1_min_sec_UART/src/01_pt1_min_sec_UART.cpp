@@ -57,7 +57,7 @@ static void vLEDTask1(void *pvParameters) {
 		LedState = (bool) !LedState;
 
 		/* About a 3Hz on/off toggle rate */
-		vTaskDelay(configTICK_RATE_HZ / 6);
+		vTaskDelay(configTICK_RATE_HZ / 2);
 	}
 }
 
@@ -70,7 +70,19 @@ static void vLEDTask2(void *pvParameters) {
 		LedState = (bool) !LedState;
 
 		/* About a 7Hz on/off toggle rate */
-		vTaskDelay(configTICK_RATE_HZ / 14);
+		vTaskDelay(configTICK_RATE_HZ / 3);
+	}
+}
+
+/*LED 3 toggle thread*/
+static void vLEDTask3(void *pvParameters) {
+	bool LedState = true;
+
+	while(1){
+		Board_LED_Set(2, LedState);
+		LedState = (bool) !LedState;
+
+		vTaskDelay(configTICK_RATE_HZ / 5);
 	}
 }
 
@@ -122,6 +134,11 @@ int main(void)
 	xTaskCreate(vLEDTask2, "vTaskLed2",
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(TaskHandle_t *) NULL);
+
+	/*LED 3 toggle thread*/
+	xTaskCreate(vLEDTask3, "vTaskLed3",
+			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
+			(TaskHandle_t *) NULL);
 
 	/* UART output thread, simply counts seconds */
 	xTaskCreate(vUARTTask, "vTaskUart",
