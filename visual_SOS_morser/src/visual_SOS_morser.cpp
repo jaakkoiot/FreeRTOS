@@ -38,6 +38,16 @@
  * Private functions
  ****************************************************************************/
 
+void output_dash_dot(unsigned int time){
+	for(int n = 0; n < 3; n++){
+		Board_LED_Set(0, true);
+		vTaskDelay(time);
+		Board_LED_Set(0, false);
+		vTaskDelay(time);
+	}
+}
+
+
 /* Sets up system hardware */
 static void prvSetupHardware(void)
 {
@@ -50,14 +60,14 @@ static void prvSetupHardware(void)
 
 /* LED1 toggle thread */
 static void vLEDTask1(void *pvParameters) {
-	bool LedState = false;
+	unsigned int dot = configTICK_RATE_HZ / 10;  //100
+	unsigned int dash = dot * 3;				 //300
 
 	while (1) {
-		Board_LED_Set(0, LedState);
-		LedState = (bool) !LedState;
-
-		/* About a 3Hz on/off toggle rate */
-		vTaskDelay(configTICK_RATE_HZ / 2);
+		output_dash_dot(dot);
+		output_dash_dot(dash);
+		output_dash_dot(dot);
+		vTaskDelay(dot * 20);
 	}
 }
 
@@ -71,18 +81,6 @@ static void vLEDTask2(void *pvParameters) {
 
 		/* About a 7Hz on/off toggle rate */
 		vTaskDelay(configTICK_RATE_HZ / 3);
-	}
-}
-
-/*LED 3 toggle thread*/
-static void vLEDTask3(void *pvParameters) {
-	bool LedState = true;
-
-	while(1){
-		Board_LED_Set(2, LedState);
-		LedState = (bool) !LedState;
-
-		vTaskDelay(configTICK_RATE_HZ / 5);
 	}
 }
 
@@ -140,15 +138,11 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(TaskHandle_t *) NULL);
 
-	/* LED2 toggle thread */
+	/* LED2 toggle thread
 	xTaskCreate(vLEDTask2, "vTaskLed2",
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(TaskHandle_t *) NULL);
+				(TaskHandle_t *) NULL); */
 
-	/*LED 3 toggle thread*/
-	xTaskCreate(vLEDTask3, "vTaskLed3",
-			configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-			(TaskHandle_t *) NULL);
 
 	/* UART output thread, simply counts seconds */
 	xTaskCreate(vUARTTask, "vTaskUart",
