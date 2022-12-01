@@ -97,28 +97,6 @@ static void vLEDTask2(void *pvParameters) {
 	}
 }
 
-/* UART (or output) thread */
-static void vUARTTask(void *pvParameters) {
-	int sec = 0;
-	int min = 0;
-
-	while (1) {
-		DEBUGOUT("Time: %02d:%02d \r\n", min, sec);
-		sec++;
-
-		if(sec == 60){
-			min++;
-			if(min == 60){
-				min = 0;
-			}
-			sec = 0;
-			DEBUGOUT("-- -- --\n");
-		}
-
-		/* About a 1s delay here */
-		vTaskDelay(configTICK_RATE_HZ);
-	}
-}
 
 /*****************************************************************************
  * Public functions
@@ -156,11 +134,6 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(TaskHandle_t *) NULL);
 
-
-	/* UART output thread, simply counts seconds */
-	xTaskCreate(vUARTTask, "vTaskUart",
-				configMINIMAL_STACK_SIZE + 128, NULL, (tskIDLE_PRIORITY + 1UL),
-				(TaskHandle_t *) NULL);
 
 	/* Start the scheduler */
 	vTaskStartScheduler();
