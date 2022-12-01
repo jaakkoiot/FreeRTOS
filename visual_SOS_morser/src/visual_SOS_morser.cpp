@@ -38,15 +38,6 @@
  * Private functions
  ****************************************************************************/
 
-void output_dash_dot(unsigned int time){
-	for(int n = 0; n < 3; n++){
-		Board_LED_Set(0, true);
-		vTaskDelay(time);
-		Board_LED_Set(0, false);
-		vTaskDelay(time);
-	}
-}
-
 
 /* Sets up system hardware */
 static void prvSetupHardware(void)
@@ -60,14 +51,36 @@ static void prvSetupHardware(void)
 
 /* LED1 toggle thread */
 static void vLEDTask1(void *pvParameters) {
-	unsigned int dot = configTICK_RATE_HZ / 10;  //100
-	unsigned int dash = dot * 3;				 //300
+	//print dot - dash - dot, if state is dot (is_dot = true) toggle is faster
+	bool is_dot = true;
+
+	//print sequence: dot - dash - dot
+	//vTaskDelay(1500) needs to encompas the whole dot - dash - dot cycle:
+	//dash is 3 * dot and there are 3 dashes: dashes represent 18 dots in total (3 * 2 * 3 = 18)
+	//there are in total 6 dots + 18 dots from dashes: total = 24 dots;
+	//so dot should be a duration of 2400 / 24 = 100
+
+	int dot = 100; 		//or: configTICK_RATE_HZ / 10
+	int dash = dot * 3;	//dash length = 3 dots = 300ms
+
 
 	while (1) {
-		output_dash_dot(dot);
-		output_dash_dot(dash);
-		output_dash_dot(dot);
-		vTaskDelay(dot * 20);
+		if(is_dot){
+			for(int k = 0; k < 3; k++){
+				Board_LED_Set(0, true);
+				vTaskDelay(dot);
+				Board_LED_Set(0, false);
+				vTaskDelay(dot);
+			}
+		}else{
+			for(int k = 0; k < 3; k++){
+				Board_LED_Set(0, true);
+				vTaskDelay(dash);
+				Board_LED_Set(0, false);
+				vTaskDelay(dash);
+			}
+		}
+		is_dot = (bool) !is_dot;
 	}
 }
 
@@ -79,8 +92,8 @@ static void vLEDTask2(void *pvParameters) {
 		Board_LED_Set(1, LedState);
 		LedState = (bool) !LedState;
 
-		/* About a 7Hz on/off toggle rate */
-		vTaskDelay(configTICK_RATE_HZ / 3);
+		/* state toggles at a rate of 2.4s */
+		vTaskDelay(2400);
 	}
 }
 
@@ -138,10 +151,10 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(TaskHandle_t *) NULL);
 
-	/* LED2 toggle thread
+	/* LED2 toggle thread */
 	xTaskCreate(vLEDTask2, "vTaskLed2",
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(TaskHandle_t *) NULL); */
+				(TaskHandle_t *) NULL);
 
 
 	/* UART output thread, simply counts seconds */
