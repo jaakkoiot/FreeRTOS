@@ -99,6 +99,25 @@ static void vLEDTask2(void *pvParameters) {
 	}
 }
 
+/* UART outputs variable increments: 1/sec and 10/sec when SW1 is active */
+static void vUARTTask(void *pvParameters) {
+	unsigned int count = 0, increment_time;
+	bool light = false;
+
+	while (1) {
+		DEBUGOUT("Tick: %d \r\n", count);
+		count++;
+
+		Board_LED_Set(1, light);
+		light = (bool) !light;
+
+		if(int i = Sw1.read()) {
+			increment_time = configTICK_RATE_HZ / 10;
+		}else increment_time = configTICK_RATE_HZ;
+
+		vTaskDelay(time);
+	}
+}
 
 /*****************************************************************************
  * Public functions
