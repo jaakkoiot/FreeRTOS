@@ -136,6 +136,9 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(TaskHandle_t *) NULL);
 
+	xTaskCreate(vUARTTask, "vTaskUart",
+					configMINIMAL_STACK_SIZE + 128, NULL, (tskIDLE_PRIORITY + 1UL),
+					(TaskHandle_t *) NULL);
 
 	/* Start the scheduler */
 	vTaskStartScheduler();
