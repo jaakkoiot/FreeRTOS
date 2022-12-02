@@ -25,6 +25,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "heap_lock_monitor.h"
+#include "DigitalIoPin.h"
 
 /*****************************************************************************
  * Private types/enumerations/variables
@@ -38,6 +39,7 @@
  * Private functions
  ****************************************************************************/
 
+DigitalIoPin SW1(0, 17, DigitalIoPin::pinMode::pullup, true);
 
 /* Sets up system hardware */
 static void prvSetupHardware(void)
