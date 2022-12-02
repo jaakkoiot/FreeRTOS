@@ -111,11 +111,11 @@ static void vUARTTask(void *pvParameters) {
 		Board_LED_Set(1, light);
 		light = (bool) !light;
 
-		if(int i = Sw1.read()) {
+		if(SW1.read()) {
 			increment_time = configTICK_RATE_HZ / 10;
 		}else increment_time = configTICK_RATE_HZ;
 
-		vTaskDelay(time);
+		vTaskDelay(increment_time);
 	}
 }
 
