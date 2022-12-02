@@ -57,7 +57,7 @@ static void vLEDTask1(void *pvParameters) {
 	bool is_dot = true;
 
 	//print sequence: dot - dash - dot
-	//vTaskDelay(1500) needs to encompas the whole dot - dash - dot cycle:
+	//vTaskDelay(1500) needs to encompass the whole dot - dash - dot cycle:
 	//dash is 3 * dot and there are 3 dashes: dashes represent 18 dots in total (3 * 2 * 3 = 18)
 	//there are in total 6 dots + 18 dots from dashes: total = 24 dots;
 	//so dot should be a duration of 2400 / 24 = 100
@@ -101,21 +101,24 @@ static void vLEDTask2(void *pvParameters) {
 
 /* UART outputs variable increments: 1/sec and 10/sec when SW1 is active */
 static void vUARTTask(void *pvParameters) {
-	unsigned int count = 0, increment_time;
+	unsigned int count = 0;
+
+	unsigned int slow = configTICK_RATE_HZ;
+	unsigned int fast = configTICK_RATE_HZ / 10;
+
 	bool light = false;
 
 	while (1) {
-		DEBUGOUT("Tick: %d \r\n", count);
+		DEBUGOUT("tck: %d \r\n", count);
 		count++;
 
 		Board_LED_Set(1, light);
 		light = (bool) !light;
 
 		if(SW1.read()) {
-			increment_time = configTICK_RATE_HZ / 10;
-		}else increment_time = configTICK_RATE_HZ;
-
-		vTaskDelay(increment_time);
+			vTaskDelay(fast);
+		}else
+			vTaskDelay(slow);
 	}
 }
 
@@ -133,7 +136,7 @@ void vConfigureTimerForRunTimeStats( void ) {
 }
 
 }
-/* end runtime statictics collection */
+/* end runtime statistics collection */
 
 /**
  * @brief	main routine for FreeRTOS blinky example
@@ -155,6 +158,7 @@ int main(void)
 				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
 				(TaskHandle_t *) NULL);
 
+	/* UART output thread */
 	xTaskCreate(vUARTTask, "vTaskUart",
 					configMINIMAL_STACK_SIZE + 128, NULL, (tskIDLE_PRIORITY + 1UL),
 					(TaskHandle_t *) NULL);
