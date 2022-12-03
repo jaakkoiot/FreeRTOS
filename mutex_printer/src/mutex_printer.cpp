@@ -76,9 +76,10 @@ struct ButtonNum{
 	int btn_number;
 };
 
-/* Setup the port and pin in the array */
-static const int ports[] {0, 0, 1, 1}; // first element is dummy
-static const int pins [] {0, 17, 11, 9};
+
+//using arrays to map ports & pins
+static const int port_map[] {0, 0, 1, 1};  // first element is dummy
+static const int pin_map[] {0, 17, 11, 9};
 
 
 LpcUart lpcUart(cfg);
@@ -86,12 +87,12 @@ Fmutex m;
 
 /* vButtonTask function */
 static void vPushButton(void *pvParameters){
-	ButtonTaskInfo *bti = static_cast <ButtonTaskInfo *> (pvParameters);
-	DigitalIoPin button(ports[bti->btn_number], pins[bti->btn_number], DigitalIoPin::pullup, true);
+	ButtonTaskInfo *btn_index = static_cast <ButtonNum *> (pvParameters);
+	DigitalIoPin button(ports[btn_index->btn_number], pins[btn_index->btn_number], DigitalIoPin::pullup, true);
 	while(1){
 		if(button.read()){
 			char buff[50];
-			snprintf(buff, 50, "Sw%d pressed\r\n", bti->button_nr);
+			snprintf(buff, 50, "Sw%d pressed\r\n", btn_index->button_nr);
 			m.lock();
 			lpcUart.write(buff);
 			m.unlock();
