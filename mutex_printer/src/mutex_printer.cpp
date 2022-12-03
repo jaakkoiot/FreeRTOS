@@ -90,8 +90,8 @@ static void vPushButton(void *pvParameters){
 	DigitalIoPin button(port_map[btn_index->btn_number], pin_map[btn_index->btn_number], DigitalIoPin::pullup, true);
 	while(1){
 		if(button.read()){
-			char buff[50];
-			snprintf(buff, 50, "Sw%d pressed\r\n", btn_index->btn_number);
+			char buff[20];
+			snprintf(buff, 20, "Sw%d pressed\r\n", btn_index->btn_number);
 			m.lock();
 			lpcUart.write(buff);
 			m.unlock();
