@@ -49,12 +49,13 @@ static void prvSetupHardware(void)
 
 	/* Initial LED0 state is off */
 	Board_LED_Set(0, false);
+
+	/* Define buttons */
+	DigitalIoPin SW1(0, 17, DigitalIoPin::pullup, true);
+	DigitalIoPin SW2(1, 11, DigitalIoPin::pullup, true);
+	DigitalIoPin SW3(1, 9, DigitalIoPin::pullup, true);
 }
 
-/* Define buttons */
-DigitalIoPin SW1(0, 17, DigitalIoPin::pullup, true);
-DigitalIoPin SW2(1, 11, DigitalIoPin::pullup, true);
-DigitalIoPin SW3(1, 9, DigitalIoPin::pullup, true);
 
 /* serial communication definition */
 LpcPinMap none = {-1, -1}; // unused pin has negative values in
