@@ -72,7 +72,7 @@ LpcUartConfig cfg = {
 };
 
 
-struct ButtonNum{
+struct ButtonTask{
 	int btn_number;
 };
 
@@ -85,10 +85,9 @@ static const int pin_map[] {0, 17, 11, 9};
 LpcUart lpcUart(cfg);
 Fmutex m;
 
-/* vButtonTask function */
 static void vPushButton(void *pvParameters){
-	ButtonTaskInfo *btn_index = static_cast <ButtonNum *> (pvParameters);
-	DigitalIoPin button(ports[btn_index->btn_number], pins[btn_index->btn_number], DigitalIoPin::pullup, true);
+	ButtonTask *btn_index = static_cast <ButtonTask *> (pvParameters);
+	DigitalIoPin button(port_map[btn_index->btn_number], pin_map[btn_index->btn_number], DigitalIoPin::pullup, true);
 	while(1){
 		if(button.read()){
 			char buff[50];
@@ -127,9 +126,9 @@ int main(void)
 
 	heap_monitor_setup();
 
-	static ButtonNum t1 {1};
-	static ButtonNum t2 {2};
-	static ButtonNum t3 {3};
+	static ButtonTask t1 {1};
+	static ButtonTask t2 {2};
+	static ButtonTask t3 {3};
 
 	/* RTOS threads */
 	xTaskCreate(vPushButton, "Button1",
