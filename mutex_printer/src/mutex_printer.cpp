@@ -26,6 +26,8 @@
 #include "task.h"
 #include "heap_lock_monitor.h"
 #include "DigitalIoPin.h"
+#include "Fmutex.h"
+#include "LpcUart.h"
 
 /*****************************************************************************
  * Private types/enumerations/variables
@@ -39,7 +41,25 @@
  * Private functions
  ****************************************************************************/
 
-DigitalIoPin SW1(0, 17, DigitalIoPin::pinMode::pullup, true);
+/* Define buttons */
+DigitalIoPin SW1(0, 17, DigitalIoPin::pullup, true);
+DigitalIoPin SW2(1, 11, DigitalIoPin::pullup, true);
+DigitalIoPin SW3(1, 9, DigitalIoPin::pullup, true);
+
+/* serial communication definition */
+LpcPinMap none = {-1, -1}; // unused pin has negative values in
+LpcPinMap txpin = {.port = 0, .pin = 18 }; // transmit pin that goes to debugger's UART->USB converter
+LpcPinMap rxpin = { .port = 0, .pin = 13 }; // receive pin that goes to debugger's UART->USB converter
+LpcUartConfig cfg = {
+		.pUART = LPC_USART0,
+		.speed = 115200,
+		.data = UART_CFG_DATALEN_8 | UART_CFG_PARITY_NONE | UART_CFG_STOPLEN_1,
+		.rs485 = false,
+		.tx = txpin,
+		.rx = rxpin,
+		.rts = none,
+		.cts = none
+};
 
 /* Sets up system hardware */
 static void prvSetupHardware(void)
