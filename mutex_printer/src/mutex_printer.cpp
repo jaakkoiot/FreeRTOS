@@ -91,7 +91,7 @@ static void vPushButton(void *pvParameters){
 	while(1){
 		if(button.read()){
 			char buff[50];
-			snprintf(buff, 50, "Sw%d pressed\r\n", btn_index->button_nr);
+			snprintf(buff, 50, "Sw%d pressed\r\n", btn_index->btn_number);
 			m.lock();
 			lpcUart.write(buff);
 			m.unlock();
