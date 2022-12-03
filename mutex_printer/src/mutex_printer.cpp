@@ -41,6 +41,16 @@
  * Private functions
  ****************************************************************************/
 
+/* Sets up system hardware */
+static void prvSetupHardware(void)
+{
+	SystemCoreClockUpdate();
+	Board_Init();
+
+	/* Initial LED0 state is off */
+	Board_LED_Set(0, false);
+}
+
 /* Define buttons */
 DigitalIoPin SW1(0, 17, DigitalIoPin::pullup, true);
 DigitalIoPin SW2(1, 11, DigitalIoPin::pullup, true);
@@ -61,84 +71,32 @@ LpcUartConfig cfg = {
 		.cts = none
 };
 
-/* Sets up system hardware */
-static void prvSetupHardware(void)
-{
-	SystemCoreClockUpdate();
-	Board_Init();
 
-	/* Initial LED0 state is off */
-	Board_LED_Set(0, false);
-}
+struct ButtonNum{
+	int btn_number;
+};
 
-/* LED1 toggle thread */
-static void vLEDTask1(void *pvParameters) {
-	//print dot - dash - dot, if state is dot (is_dot = true) toggle is faster
-	bool is_dot = true;
-
-	//print sequence: dot - dash - dot
-	//vTaskDelay(1500) needs to encompass the whole dot - dash - dot cycle:
-	//dash is 3 * dot and there are 3 dashes: dashes represent 18 dots in total (3 * 2 * 3 = 18)
-	//there are in total 6 dots + 18 dots from dashes: total = 24 dots;
-	//so dot should be a duration of 2400 / 24 = 100
-
-	int dot = 100; 		//or: configTICK_RATE_HZ / 10
-	int dash = dot * 3;	//dash length = 3 dots = 300ms
+/* Setup the port and pin in the array */
+static const int ports[] {0, 0, 1, 1}; // first element is dummy
+static const int pins [] {0, 17, 11, 9};
 
 
-	while (1) {
-		if(is_dot){
-			for(int k = 0; k < 3; k++){
-				Board_LED_Set(0, true);
-				vTaskDelay(dot);
-				Board_LED_Set(0, false);
-				vTaskDelay(dot);
-			}
-		}else{
-			for(int k = 0; k < 3; k++){
-				Board_LED_Set(0, true);
-				vTaskDelay(dash);
-				Board_LED_Set(0, false);
-				vTaskDelay(dash);
-			}
+LpcUart lpcUart(cfg);
+Fmutex m;
+
+/* vButtonTask function */
+static void vPushButton(void *pvParameters){
+	ButtonTaskInfo *bti = static_cast <ButtonTaskInfo *> (pvParameters);
+	DigitalIoPin button(ports[bti->btn_number], pins[bti->btn_number], DigitalIoPin::pullup, true);
+	while(1){
+		if(button.read()){
+			char buff[50];
+			snprintf(buff, 50, "Sw%d pressed\r\n", bti->button_nr);
+			m.lock();
+			lpcUart.write(buff);
+			m.unlock();
 		}
-		is_dot = (bool) !is_dot;
-	}
-}
-
-/* LED2 toggle thread */
-static void vLEDTask2(void *pvParameters) {
-	bool LedState = false;
-
-	while (1) {
-		Board_LED_Set(1, LedState);
-		LedState = (bool) !LedState;
-
-		/* state toggles at a rate of 2.4s */
-		vTaskDelay(2400);
-	}
-}
-
-/* UART outputs variable increments: 1/sec and 10/sec when SW1 is active */
-static void vUARTTask(void *pvParameters) {
-	unsigned int count = 0;
-
-	unsigned int slow = configTICK_RATE_HZ;
-	unsigned int fast = configTICK_RATE_HZ / 10;
-
-	bool light = false;
-
-	while (1) {
-		DEBUGOUT("tck: %d \r\n", count);
-		count++;
-
-		Board_LED_Set(1, light);
-		light = (bool) !light;
-
-		if(SW1.read()) {
-			vTaskDelay(fast);
-		}else
-			vTaskDelay(slow);
+		vTaskDelay(100);
 	}
 }
 
@@ -168,19 +126,21 @@ int main(void)
 
 	heap_monitor_setup();
 
-	/* LED1 toggle thread */
-	xTaskCreate(vLEDTask1, "vTaskLed1",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(TaskHandle_t *) NULL);
+	static ButtonNum t1 {1};
+	static ButtonNum t2 {2};
+	static ButtonNum t3 {3};
 
-	/* LED2 toggle thread */
-	xTaskCreate(vLEDTask2, "vTaskLed2",
-				configMINIMAL_STACK_SIZE, NULL, (tskIDLE_PRIORITY + 1UL),
-				(TaskHandle_t *) NULL);
+	/* RTOS threads */
+	xTaskCreate(vPushButton, "Button1",
+					configMINIMAL_STACK_SIZE + 80, &t1, (tskIDLE_PRIORITY + 1UL),
+					(TaskHandle_t *) NULL);
 
-	/* UART output thread */
-	xTaskCreate(vUARTTask, "vTaskUart",
-					configMINIMAL_STACK_SIZE + 128, NULL, (tskIDLE_PRIORITY + 1UL),
+	xTaskCreate(vPushButton, "Button2",
+					configMINIMAL_STACK_SIZE + 80, &t2, (tskIDLE_PRIORITY + 1UL),
+					(TaskHandle_t *) NULL);
+
+	xTaskCreate(vPushButton, "Button3",
+					configMINIMAL_STACK_SIZE + 80, &t3, (tskIDLE_PRIORITY + 1UL),
 					(TaskHandle_t *) NULL);
 
 	/* Start the scheduler */
