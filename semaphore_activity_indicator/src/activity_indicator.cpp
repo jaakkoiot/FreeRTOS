@@ -7,8 +7,6 @@
 #endif
 
 #include <cr_section_macros.h>
-
-
 #include "FreeRTOS.h"
 #include "task.h"
 #include "heap_lock_monitor.h"
@@ -16,21 +14,8 @@
 #include <cstring>
 
 
-/*****************************************************************************
- * Private types/enumerations/variables
- ****************************************************************************/
-
-/*****************************************************************************
- * Public types/enumerations/variables
- ****************************************************************************/
-
-/*****************************************************************************
- * Private functions
- ****************************************************************************/
-
 SemaphoreHandle_t binary_semaphore;
 
-/* Sets up system hardware */
 static void prvSetupHardware(void)
 {
 	SystemCoreClockUpdate();
@@ -55,8 +40,6 @@ static void vread(void *pvParameters){
 }
 
 
-
-/* function to blink the led */
 static void vblink(void *pvParameters){
 
 	while(1){
@@ -70,10 +53,6 @@ static void vblink(void *pvParameters){
 
 }
 
-
-/*****************************************************************************
- * Public functions
- ****************************************************************************/
 
 /* the following is required if runtime statistics are to be collected */
 extern "C" {
