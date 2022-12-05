@@ -24,6 +24,7 @@ static void prvSetupHardware(void)
 	Board_LED_Set(0, false);
 }
 
+//TO-DO for tasks: add separate task for different indicator function
 
 static void vread(void *pvParameters){
 
