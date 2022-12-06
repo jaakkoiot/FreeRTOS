@@ -61,7 +61,7 @@ static void vReadUart(void *pvParameters) {
 				Dty->uart->write(str, count);
 				Dty->uart->write('\n');
 				Dty->mutx->lock();
-				ITM_write("[YOU] ");
+				ITM_write("[YOU]: ");
 				ITM_write(str);
 				Dty->mutx->unlock();
 				for(char ch : str){
@@ -77,23 +77,30 @@ static void vReadUart(void *pvParameters) {
 }
 
 static void vOracleTask(void *pvParameters){
-	const char *ans[5] = { "You are quite lazy to be honest \n",
-			"What happen to you this year?\n",
-			"Can you be a bit smart to know what to do?\n",
-			"Life sometime is so hard, but we still need to move on because hope is bright\n",
-			"Hello there\n"};
-	Task *Dty = static_cast<Task *>(pvParameters);
+	const char *ans[10] = {
+			"Fortune favours the bold... \n",
+			"You must open the third eye. See the unseen.\n",
+			"Please assess the situation, you are just confused?\n",
+			"RUN! Or walk. Just move. You'know, for your blood pressure.\n",
+			"I am become death, destroyer of worlds!\n",
+			"I am feeling a little peckish, put your hand on the USB port.\n",
+			"Have you been swimming lately?\n",
+			"I heard abyss is nice this time of NULL\n",
+			"You had nine lives. One to go.\n",
+			"Ahhh. You're too young to understand, mortal\n"};
+
+	Task *locker = static_cast<Task *>(pvParameters);
 
 	while(1){
 		if(xSemaphoreTake(semaphore, portMAX_DELAY) == pdTRUE){
-			Dty->mutx->lock();
-			ITM_write("[Oracle] Hmmm....\n");
-			Dty->mutx->unlock();
+			locker->mutx->lock();
+			ITM_write("[Oracle]: Hmmm....\n");
+			locker->mutx->unlock();
 			vTaskDelay(3000);
-			Dty->mutx->lock();
-			ITM_write("[Oracle] ");
-			ITM_write(ans[rand() % 5]);
-			Dty->mutx->unlock();
+			locker->mutx->lock();
+			ITM_write("[Oracle]: ");
+			ITM_write(ans[rand() % 10]);
+			locker->mutx->unlock();
 			vTaskDelay(2000);
 		}
 	}
