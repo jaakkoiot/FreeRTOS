@@ -12,7 +12,8 @@
 #include "heap_lock_monitor.h"
 #include "semphr.h"
 #include <cstring>
-
+#include <cstdlib>
+#include "ITMwrite.h"
 
 SemaphoreHandle_t binary_semaphore;
 
@@ -24,34 +25,66 @@ static void prvSetupHardware(void)
 	Board_LED_Set(0, false);
 }
 
-//TO-DO for tasks: add separate task for different indicator function
+struct Task{
+	LpcUart *uart;
+	Fmutex *mutx;
+};
 
-static void vread(void *pvParameters){
 
-	int ch;
+static void vReadUart(void *pvParameters) {
+	//static cast void ptr to lpcuart ptr by type;
+	Task *Dty = static_cast<Task *>(pvParameters);
+
+	int count = 0;
+	char str[61];
+
 	while(1){
-		ch = Board_UARTGetChar();
-		if(ch != EOF){
-			if(ch =='\n') Board_UARTPutChar('\r');
-			Board_UARTPutChar(ch);
-			if(ch == '\r')Board_UARTPutChar('\n');
-			xSemaphoreGive(binary_semaphore);
+		int bytes = Dty->uart->read(str+count, 60-count); 	//lpcUart read-function returns nmb of chars read
+		if(bytes > 0){
+			count += bytes;									//one char = one byte
+			str[count] = '\0';								//string end sign \0
+			Dty->uart->write(str+count-bytes, bytes);		//write to uart
+
+			if(strchr(str, '\r') != NULL || strchr(str, '\n') != NULL || count >= 60){
+				Dty->uart->write(str, count);
+				Dty->uart->write('\n');
+				Dty->mutx->lock();
+				ITM_write("[YOU] ");
+				ITM_write(str);
+				Dty->mutx->unlock();
+				for(char ch : str){
+					if(ch == '?') {
+						xSemaphoreGive(semaphore);
+						break;
+					}
+				}
+				count = 0;
+			}
 		}
 	}
 }
 
-
-static void vblink(void *pvParameters){
+static void vOracleTask(void *pvParameters){
+	const char *ans[5] = { "You are quite lazy to be honest \n",
+			"What happen to you this year?\n",
+			"Can you be a bit smart to know what to do?\n",
+			"Life sometime is so hard, but we still need to move on because hope is bright\n",
+			"Hello there\n"};
+	Task *Dty = static_cast<Task *>(pvParameters);
 
 	while(1){
-		if(xSemaphoreTake(binary_semaphore, portMAX_DELAY) == pdTRUE){
-			Board_LED_Set(0, true);
-			vTaskDelay(100);
-			Board_LED_Set(0,false);
-			vTaskDelay(100);
+		if(xSemaphoreTake(semaphore, portMAX_DELAY) == pdTRUE){
+			Dty->mutx->lock();
+			ITM_write("[Oracle] Hmmm....\n");
+			Dty->mutx->unlock();
+			vTaskDelay(3000);
+			Dty->mutx->lock();
+			ITM_write("[Oracle] ");
+			ITM_write(ans[rand() % 5]);
+			Dty->mutx->unlock();
+			vTaskDelay(2000);
 		}
 	}
-
 }
 
 
