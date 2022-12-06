@@ -1,3 +1,4 @@
+
 #if defined (__USE_LPCOPEN)
 #if defined(NO_BOARD_LIB)
 #include "chip.h"
@@ -7,22 +8,33 @@
 #endif
 
 #include <cr_section_macros.h>
+
+// TODO: insert other include files here
+
+// TODO: insert other definitions and declarations here
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "heap_lock_monitor.h"
-#include "semphr.h"
+#include "LpcUart.h"
+#include "ITMwrite.h"
+#include "Fmutex.h"
 #include <cstring>
 #include <cstdlib>
-#include "ITMwrite.h"
 
-SemaphoreHandle_t binary_semaphore;
+
+SemaphoreHandle_t semaphore;
 
 static void prvSetupHardware(void)
 {
 	SystemCoreClockUpdate();
 	Board_Init();
+
+	ITM_init();
+
 	/* Initial LED0 state is off */
 	Board_LED_Set(0, false);
+
 }
 
 struct Task{
