@@ -1,17 +1,22 @@
 /*
- * ITMwrite.h
+ * ITM_write.h
  *
- *  Created on: 6 Dec 2022
- *      Author: 35840
+ *  Created on: 5.9.2016
+ *      Author: krl
  */
 
-#ifndef ITMWRITE_H_
-#define ITMWRITE_H_
+#ifndef ITM_WRITE_H_
+#define ITM_WRITE_H_
 
-class ITM_write {
-public:
-	ITM_write();
-	virtual ~ITM_write();
-};
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* ITMWRITE_H_ */
+void ITM_init(void);
+int ITM_write(const char *pcBuffer);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* ITM_WRITE_H_ */
